@@ -1,0 +1,11 @@
+
+FROM golang:1.19-alpine as build
+WORKDIR /src
+COPY . .
+RUN go build -o ./app
+
+FROM alpine:latest
+COPY --from=build /src/app /bin/app
+WORKDIR /bin
+EXPOSE 3000
+CMD ["/bin/app"]
