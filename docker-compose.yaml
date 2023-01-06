@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  http:
+    image: symefa/gedebook:latest
+    build:
+      context: ./http
+      dockerfile: dockerfile
+    ports:
+      - "3090:3000"
+    depends_on:
+      - db
+    networks:
+      - gedebook
+  db:
+    image: postgres:latest
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - gedebook
+
+volumes:
+  db_data:
+
+networks:
+  gedebook:
