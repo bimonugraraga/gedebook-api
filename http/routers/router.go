@@ -3,7 +3,10 @@ package routers
 import (
 	"net/http"
 
+	"gedebook.com/api/controllers"
+	"gedebook.com/api/domain/repository"
 	"gedebook.com/api/dto/responses"
+	"gedebook.com/api/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,4 +19,14 @@ func RoutesHandler(r *gin.Engine) {
 			Message: "Hello World",
 		})
 	})
+	rp := repository.InitRepositoryInstance()
+	adminSrv := services.NewAdminService(rp.Admin)
+	adminCtl := controllers.NewAdminController(adminSrv)
+
+	admin := r.Group("/admin")
+	{
+		admin.GET("/test",
+			adminCtl.HelloAdmin,
+		)
+	}
 }
