@@ -23,10 +23,20 @@ func RoutesHandler(r *gin.Engine) {
 	adminSrv := services.NewAdminService(rp.Admin)
 	adminCtl := controllers.NewAdminController(adminSrv)
 
+	userSrv := services.NewUserService(rp.User)
+	userCtl := controllers.NewUserController(userSrv)
+
 	admin := r.Group("/admin")
 	{
 		admin.GET("/test",
 			adminCtl.HelloAdmin,
+		)
+	}
+
+	user := r.Group("/user")
+	{
+		user.POST("/register",
+			userCtl.UserRegister,
 		)
 	}
 }
