@@ -37,3 +37,7 @@ After that you can continue executing the command line to compose the docker sta
 ```
 docker-compose up -d
 ```
+## ERD
+Install Draw io plugin in VS Code
+- You can update ERD in Git
+- DO NOT CREATE NEW ERD (EXCEPT FOR NEXT SPRINT)
