@@ -12,8 +12,8 @@ type User struct {
 	Email          string    `bun:"email" json:"email"`
 	Password       string    `bun:"password" json:"password"`
 	Name           string    `bun:"name" json:"name"`
-	Profile        string    `bun:"profile" json:"profile"`
-	ProfilePicture string    `bun:"profile_picture" json:"profile_picture"`
+	Profile        *string   `bun:"profile" json:"profile"`
+	ProfilePicture *string   `bun:"profile_picture" json:"profile_picture"`
 	LifePoint      int32     `bun:"life_point" json:"life_point"`
 	UpdatedAt      time.Time `bun:"updated_at,nullzero" json:"updated_at"`
 	CreatedAt      time.Time `bun:"created_at,nullzero" json:"created_at"`

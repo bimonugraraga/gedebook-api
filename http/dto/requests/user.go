@@ -11,6 +11,11 @@ type UserRegisterRequest struct {
 	Name     string `json:"name" form:"name" binding:"required"`
 }
 
+type UserLoginRequest struct {
+	Email    string `json:"email" form:"email" binding:"required"`
+	Password string `json:"password" form:"password" binding:"required"`
+}
+
 func (src UserRegisterRequest) AssignedUserRegister() (res domain.User, err error) {
 	if err := copier.Copy(&res, &src); err != nil {
 		return domain.User{}, err

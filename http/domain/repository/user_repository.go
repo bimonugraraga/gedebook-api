@@ -9,7 +9,8 @@ import (
 )
 
 type UserRepository interface {
-	Register(ctx context.Context, tx *bun.Tx, src *domain.User) (err error)
+	Register(ctx context.Context, src *domain.User) (err error)
+	GetOneUser(ctx context.Context, email string) (res domain.User, err error)
 }
 
 type userRepository struct {
@@ -22,13 +23,23 @@ func NewUserRepository() UserRepository {
 	}
 }
 
-func (r *userRepository) Register(ctx context.Context, tx *bun.Tx, src *domain.User) (err error) {
-	_, err = tx.NewInsert().
+func (r *userRepository) Register(ctx context.Context, src *domain.User) (err error) {
+	_, err = r.db.NewInsert().
 		Model(src).
 		Returning("*").
 		Exec(ctx)
 	if err != nil {
 		return err
+	}
+	return
+}
+
+func (r *userRepository) GetOneUser(ctx context.Context, email string) (res domain.User, err error) {
+	if err := r.db.NewSelect().
+		Model(&res).
+		Where("email = ?", email).
+		Scan(ctx); err != nil {
+		return res, err
 	}
 	return
 }

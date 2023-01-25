@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"gedebook.com/api/db"
 	"gedebook.com/api/domain"
 	"gedebook.com/api/domain/repository"
+	"gedebook.com/api/dto/requests"
 	"gedebook.com/api/errs"
 	"gedebook.com/api/utils"
 	"github.com/gin-gonic/gin"
@@ -15,6 +17,7 @@ import (
 
 type UserService interface {
 	Register(ctx *gin.Context, src *domain.User) error
+	Login(ctx *gin.Context, src *requests.UserLoginRequest) error
 }
 
 type userService struct {
@@ -36,7 +39,7 @@ func (srv *userService) Register(ctx *gin.Context, src *domain.User) error {
 			return err
 		}
 		src.Password = hashPassword
-		if err = srv.userRepo.Register(c, &tx, src); err != nil {
+		if err = srv.userRepo.Register(c, src); err != nil {
 			return err
 		}
 		return
@@ -45,5 +48,12 @@ func (srv *userService) Register(ctx *gin.Context, src *domain.User) error {
 		errs.ErrorHandler(ctx, 400, "Failed To Register")
 		return err
 	}
+	return nil
+}
+
+func (srv *userService) Login(ctx *gin.Context, src *requests.UserLoginRequest) error {
+	targetUser, err := srv.userRepo.GetOneUser(ctx, src.Email)
+	fmt.Println(targetUser)
+	fmt.Println(err, ">>>")
 	return nil
 }

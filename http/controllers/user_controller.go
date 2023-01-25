@@ -13,6 +13,7 @@ import (
 
 type UserController interface {
 	UserRegister(ctx *gin.Context)
+	UserLogin(ctx *gin.Context)
 }
 
 type userController struct {
@@ -45,6 +46,28 @@ func (ctl *userController) UserRegister(ctx *gin.Context) {
 }
 
 func (ctl *userController) ParseRequestRegisterEntity(ctx *gin.Context, src *requests.UserRegisterRequest) error {
+	if err := ctx.ShouldBindBodyWith(src, binding.JSON); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ctl *userController) UserLogin(ctx *gin.Context) {
+	var src requests.UserLoginRequest
+	if err := ctl.ParseRequestLoginEntity(ctx, &src); err != nil {
+		errs.ErrorHandler(ctx, 400, "Email and Password are Required")
+		return
+	}
+	err := ctl.userSrv.Login(ctx, &src)
+	if err == nil {
+		ctx.JSON(http.StatusOK, responses.R{
+			Code:    http.StatusOK,
+			Message: "OK",
+		})
+	}
+}
+
+func (ctl *userController) ParseRequestLoginEntity(ctx *gin.Context, src *requests.UserLoginRequest) error {
 	if err := ctx.ShouldBindBodyWith(src, binding.JSON); err != nil {
 		return err
 	}
