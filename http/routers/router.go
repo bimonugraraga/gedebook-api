@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"gedebook.com/api/controllers"
+	"gedebook.com/api/db"
 	"gedebook.com/api/domain/repository"
 	"gedebook.com/api/dto/responses"
 	"gedebook.com/api/services"
@@ -20,6 +21,9 @@ func RoutesHandler(r *gin.Engine) {
 		})
 	})
 	rp := repository.InitRepositoryInstance()
+	if db.GetConn() == nil {
+		panic("SINI")
+	}
 	adminSrv := services.NewAdminService(rp.Admin)
 	adminCtl := controllers.NewAdminController(adminSrv)
 
@@ -37,6 +41,9 @@ func RoutesHandler(r *gin.Engine) {
 	{
 		user.POST("/register",
 			userCtl.UserRegister,
+		)
+		user.POST("/login",
+			userCtl.UserLogin,
 		)
 	}
 }
