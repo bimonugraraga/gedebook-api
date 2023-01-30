@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"gedebook.com/api/dto/requests"
@@ -34,15 +35,14 @@ func (ctl *userController) UserRegister(ctx *gin.Context) {
 	}
 	newUser, err := src.AssignedUserRegister()
 	err = ctl.userSrv.Register(ctx, &newUser)
-	if err != nil {
-		errs.ErrorHandler(ctx, 400, "Failed To Register")
+	if err == nil {
+		ctx.JSON(http.StatusCreated, responses.R{
+			Code:    http.StatusCreated,
+			Message: "Success Register",
+		})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, responses.R{
-		Code:    http.StatusCreated,
-		Message: "Success Register",
-	})
 }
 
 func (ctl *userController) ParseRequestRegisterEntity(ctx *gin.Context, src *requests.UserRegisterRequest) error {
@@ -58,11 +58,13 @@ func (ctl *userController) UserLogin(ctx *gin.Context) {
 		errs.ErrorHandler(ctx, 400, "Email and Password are Required")
 		return
 	}
-	err := ctl.userSrv.Login(ctx, &src)
-	if err == nil {
+	jwt, err := ctl.userSrv.Login(ctx, &src)
+	fmt.Println(err)
+	if err == nil && jwt != nil {
 		ctx.JSON(http.StatusOK, responses.R{
 			Code:    http.StatusOK,
-			Message: "OK",
+			Message: "Success Login",
+			Data:    jwt,
 		})
 	}
 }
