@@ -18,8 +18,3 @@ type User struct {
 	UpdatedAt      time.Time `bun:"updated_at,nullzero" json:"updated_at"`
 	CreatedAt      time.Time `bun:"created_at,nullzero" json:"created_at"`
 }
-type UserPayload struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}

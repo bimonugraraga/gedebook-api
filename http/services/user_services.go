@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"gedebook.com/api/constants"
 	"gedebook.com/api/db"
 	"gedebook.com/api/domain"
 	"gedebook.com/api/domain/repository"
@@ -68,10 +69,11 @@ func (srv *userService) Login(ctx *gin.Context, src *requests.UserLoginRequest) 
 		return nil, err
 	}
 
-	payload := domain.UserPayload{
+	payload := constants.AuthnPayload{
 		Email: targetUser.Email,
 		ID:    targetUser.ID,
 		Name:  targetUser.Name,
+		Role:  string(constants.User),
 	}
 	jwt, err := utils.SignToken(payload)
 	if err != nil {
