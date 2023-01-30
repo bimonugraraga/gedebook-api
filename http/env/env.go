@@ -17,6 +17,7 @@ type Configuration struct {
 	DBDebug      bool           `mapstructure:"DB_DEBUG"`
 	DBDebugLevel int            `mapstructure:"DB_DEBUG_LEVEL"`
 	Database     DatabaseConfig `mapstructure:",squash"`
+	SecretKey    string
 }
 
 var config *Configuration
@@ -36,6 +37,7 @@ var requiredEnvs = []string{
 	"DB_DEBUG_LEVEL",
 	"DB_URL",
 	"GIN_MODE",
+	"SECRET_KEY",
 }
 
 func Init() *Configuration {

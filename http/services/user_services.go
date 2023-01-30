@@ -3,12 +3,12 @@ package services
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
 	"gedebook.com/api/db"
 	"gedebook.com/api/domain"
 	"gedebook.com/api/domain/repository"
 	"gedebook.com/api/dto/requests"
+	"gedebook.com/api/dto/responses"
 	"gedebook.com/api/errs"
 	"gedebook.com/api/utils"
 	"github.com/gin-gonic/gin"
@@ -17,7 +17,7 @@ import (
 
 type UserService interface {
 	Register(ctx *gin.Context, src *domain.User) error
-	Login(ctx *gin.Context, src *requests.UserLoginRequest) error
+	Login(ctx *gin.Context, src *requests.UserLoginRequest) (*responses.UserLoginResponse, error)
 }
 
 type userService struct {
@@ -45,15 +45,45 @@ func (srv *userService) Register(ctx *gin.Context, src *domain.User) error {
 		return
 
 	}); err != nil {
-		errs.ErrorHandler(ctx, 400, "Failed To Register")
+		errNum := errs.ParseSQLError(err)
+		if errNum == "23505" {
+			errs.ErrorHandler(ctx, 400, "Email Has Been Registered")
+		} else {
+			errs.ErrorHandler(ctx, 400, "Failed To Register")
+		}
 		return err
 	}
 	return nil
 }
 
-func (srv *userService) Login(ctx *gin.Context, src *requests.UserLoginRequest) error {
+func (srv *userService) Login(ctx *gin.Context, src *requests.UserLoginRequest) (*responses.UserLoginResponse, error) {
 	targetUser, err := srv.userRepo.GetOneUser(ctx, src.Email)
-	fmt.Println(targetUser)
-	fmt.Println(err, ">>>")
-	return nil
+	if err != nil {
+		errs.ErrorHandler(ctx, 400, "Invalid Email Or Password")
+		return nil, err
+	}
+	isPassword := utils.CheckPasswordHash(src.Password, targetUser.Password)
+	if !isPassword {
+		errs.ErrorHandler(ctx, 400, "Invalid Email Or Password")
+		return nil, err
+	}
+
+	payload := domain.UserPayload{
+		Email: targetUser.Email,
+		ID:    targetUser.ID,
+		Name:  targetUser.Name,
+	}
+	jwt, err := utils.SignToken(payload)
+	if err != nil {
+		errs.ErrorHandler(ctx, 400, "Failed To login")
+		return nil, err
+	}
+
+	logged := responses.UserLoginResponse{
+		ID:          targetUser.ID,
+		Email:       targetUser.Email,
+		Name:        targetUser.Name,
+		AccessToken: jwt,
+	}
+	return &logged, nil
 }
