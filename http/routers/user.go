@@ -1,13 +1,8 @@
 package routers
 
 import (
-	"fmt"
-	"net/http"
-
-	"gedebook.com/api/constants"
 	"gedebook.com/api/controllers"
 	"gedebook.com/api/domain/repository"
-	"gedebook.com/api/dto/responses"
 	"gedebook.com/api/middlewares"
 	"gedebook.com/api/services"
 	"github.com/gin-gonic/gin"
@@ -23,14 +18,15 @@ func User(g *gin.RouterGroup) {
 	g.POST("/login", userCtl.UserLogin)
 
 	//!Profile
-	g.GET("/profile", middlewares.UserAuthn(), func(c *gin.Context) {
-		value, exists := c.Get("user")
-		myClaim, ok := value.(constants.AuthnPayload)
-		fmt.Println(myClaim.ID, ok)
-		fmt.Println(value, exists)
-		c.JSON(http.StatusOK, responses.R{
-			Code:    http.StatusOK,
-			Message: "Hello World",
-		})
-	})
+	// g.GET("/profile", middlewares.UserAuthn(), func(c *gin.Context) {
+	// 	value, exists := c.Get("user")
+	// 	myClaim, ok := value.(constants.AuthnPayload)
+	// 	fmt.Println(myClaim.ID, ok)
+	// 	fmt.Println(value, exists)
+	// 	c.JSON(http.StatusOK, responses.R{
+	// 		Code:    http.StatusOK,
+	// 		Message: "Hello World",
+	// 	})
+	// })
+	g.GET("/profile", middlewares.UserAuthn(), userCtl.UserProfile)
 }

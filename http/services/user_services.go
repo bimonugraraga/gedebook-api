@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"gedebook.com/api/constants"
 	"gedebook.com/api/db"
@@ -19,6 +20,7 @@ import (
 type UserService interface {
 	Register(ctx *gin.Context, src *domain.User) error
 	Login(ctx *gin.Context, src *requests.UserLoginRequest) (*responses.UserLoginResponse, error)
+	UserProfile(ctx *gin.Context, params constants.AuthnPayload) (*responses.UserProfileResponse, error)
 }
 
 type userService struct {
@@ -88,4 +90,16 @@ func (srv *userService) Login(ctx *gin.Context, src *requests.UserLoginRequest) 
 		AccessToken: jwt,
 	}
 	return &logged, nil
+}
+
+func (srv *userService) UserProfile(ctx *gin.Context, params constants.AuthnPayload) (*responses.UserProfileResponse, error) {
+	targetUser, err := srv.userRepo.GetOneUserByID(ctx, int(params.ID))
+	if errors.Is(err, sql.ErrNoRows) {
+		errs.ErrorHandler(ctx, 400, "User Not Found")
+		return nil, err
+	}
+
+	res := responses.AssignedUserProfile(targetUser)
+
+	return &res, nil
 }

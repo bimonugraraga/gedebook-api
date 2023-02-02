@@ -11,6 +11,7 @@ import (
 type UserRepository interface {
 	Register(ctx context.Context, src *domain.User) (err error)
 	GetOneUser(ctx context.Context, email string) (res domain.User, err error)
+	GetOneUserByID(ctx context.Context, id int) (res domain.User, err error)
 }
 
 type userRepository struct {
@@ -38,6 +39,17 @@ func (r *userRepository) GetOneUser(ctx context.Context, email string) (res doma
 	if err := r.db.NewSelect().
 		Model(&res).
 		Where("email = ?", email).
+		Scan(ctx); err != nil {
+		return res, err
+	}
+	return
+}
+
+func (r *userRepository) GetOneUserByID(ctx context.Context, id int) (res domain.User, err error) {
+	if err := r.db.NewSelect().
+		Model(&res).
+		Where("id = ?", id).
+		ExcludeColumn("password").
 		Scan(ctx); err != nil {
 		return res, err
 	}
