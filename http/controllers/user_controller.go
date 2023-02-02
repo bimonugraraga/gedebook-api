@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
+	"gedebook.com/api/constants"
 	"gedebook.com/api/dto/requests"
 	"gedebook.com/api/dto/responses"
 	"gedebook.com/api/errs"
@@ -15,6 +15,7 @@ import (
 type UserController interface {
 	UserRegister(ctx *gin.Context)
 	UserLogin(ctx *gin.Context)
+	UserProfile(ctx *gin.Context)
 }
 
 type userController struct {
@@ -59,7 +60,7 @@ func (ctl *userController) UserLogin(ctx *gin.Context) {
 		return
 	}
 	jwt, err := ctl.userSrv.Login(ctx, &src)
-	fmt.Println(err)
+
 	if err == nil && jwt != nil {
 		ctx.JSON(http.StatusOK, responses.R{
 			Code:    http.StatusOK,
@@ -74,4 +75,23 @@ func (ctl *userController) ParseRequestLoginEntity(ctx *gin.Context, src *reques
 		return err
 	}
 	return nil
+}
+
+func (ctl *userController) UserProfile(ctx *gin.Context) {
+	value, exists := ctx.Get("user")
+	if !exists {
+		errs.ErrorHandler(ctx, 401, "Login Is Needed")
+	}
+	user, ok := value.(constants.AuthnPayload)
+	if !ok {
+		errs.ErrorHandler(ctx, 401, "Login Is Needed")
+	}
+	targetUser, err := ctl.userSrv.UserProfile(ctx, user)
+	if err == nil {
+		ctx.JSON(http.StatusOK, responses.R{
+			Code:    http.StatusOK,
+			Message: "Success Fetch Data",
+			Data:    targetUser,
+		})
+	}
 }
