@@ -13,20 +13,17 @@ func User(g *gin.RouterGroup) {
 	userSrv := services.NewUserService(rp.User)
 	userCtl := controllers.NewUserController(userSrv)
 
+	bookSrv := services.NewBookService(rp.Book, rp.User, rp.Category)
+	bookCtl := controllers.NewBookController(bookSrv)
+
 	//!Auth
 	g.POST("/register", userCtl.UserRegister)
 	g.POST("/login", userCtl.UserLogin)
 
 	//!Profile
-	// g.GET("/profile", middlewares.UserAuthn(), func(c *gin.Context) {
-	// 	value, exists := c.Get("user")
-	// 	myClaim, ok := value.(constants.AuthnPayload)
-	// 	fmt.Println(myClaim.ID, ok)
-	// 	fmt.Println(value, exists)
-	// 	c.JSON(http.StatusOK, responses.R{
-	// 		Code:    http.StatusOK,
-	// 		Message: "Hello World",
-	// 	})
-	// })
 	g.GET("/profile", middlewares.UserAuthn(), userCtl.UserProfile)
+
+	//!Book
+	g.POST("/book", middlewares.UserAuthn(), bookCtl.CreateBook)
+	g.PUT("/book/:id", middlewares.UserAuthn(), bookCtl.UpdateBook)
 }
