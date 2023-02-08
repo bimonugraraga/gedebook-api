@@ -15,6 +15,7 @@ type User struct {
 	Profile        *string   `bun:"profile" json:"profile"`
 	ProfilePicture *string   `bun:"profile_picture" json:"profile_picture"`
 	LifePoint      int32     `bun:"life_point" json:"life_point"`
+	Book           *[]Book   `bun:"rel:has-many,join:id=user_id" json:"books"`
 	UpdatedAt      time.Time `bun:"updated_at,nullzero" json:"updated_at"`
 	CreatedAt      time.Time `bun:"created_at,nullzero" json:"created_at"`
 }
