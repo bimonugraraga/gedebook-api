@@ -13,7 +13,7 @@ type BookRepository interface {
 	CreateOneBook(ctx context.Context, src *domain.Book) (err error)
 	UpdateOneBook(ctx context.Context, src *domain.Book, id int) (err error)
 	GetUserBook(ctx context.Context, book_id int, user_id int) (domain.Book, error)
-	GetOneBook(ctx context.Context, id int, published_status []domain.BookPublishedStatus) (domain.Book, error)
+	GetOneBook(ctx context.Context, id int) (domain.Book, error)
 }
 
 type bookRepository struct {
@@ -49,28 +49,34 @@ func (r *bookRepository) UpdateOneBook(ctx context.Context, src *domain.Book, id
 	return
 }
 
+//!For User No Restriction
 func (r *bookRepository) GetUserBook(ctx context.Context, book_id int, user_id int) (domain.Book, error) {
 	res := domain.Book{}
 	if err := r.db.NewSelect().
 		Model(&res).
 		Where(fmt.Sprintf("id = %d AND user_id = %d", book_id, user_id)).
+		Relation("Chapter").
 		Scan(ctx); err != nil {
 		return res, err
 	}
 	return res, nil
 }
 
-func (r *bookRepository) GetOneBook(ctx context.Context, id int, published_status []domain.BookPublishedStatus) (domain.Book, error) {
+//!For Guest Restriction Must Be Published
+func (r *bookRepository) GetOneBook(ctx context.Context, id int) (domain.Book, error) {
 	res := domain.Book{}
 	if err := r.db.NewSelect().
 		Model(&res).
 		Where("Book.id = ?", id).
-		Where("Book.published_status IN (?)", bun.In(published_status)).
+		Where("Book.published_status = ?", domain.BookPublishedStatusPublished).
 		Relation("User").
 		Relation("Category").
-		Relation("Chapter").
+		Relation("Chapter", func(query *bun.SelectQuery) *bun.SelectQuery {
+			return query.Where("published_status = ?", domain.ChapterPublishedStatusPublished).Order("id DESC")
+		}).
 		Scan(ctx); err != nil {
 		return res, err
 	}
+
 	return res, nil
 }

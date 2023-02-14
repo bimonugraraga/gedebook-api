@@ -12,7 +12,7 @@ import (
 func UserAuthn() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if len(ctx.Request.Header.Values("Authorization")) == 0 {
-			errs.ErrorHandler(ctx, 401, "Invalid Access Token")
+			ctx.Next()
 			return
 		}
 		access_token := strings.Split(ctx.Request.Header.Values("Authorization")[0], " ")

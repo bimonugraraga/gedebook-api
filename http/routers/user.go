@@ -13,9 +13,6 @@ func User(g *gin.RouterGroup) {
 	userSrv := services.NewUserService(rp.User)
 	userCtl := controllers.NewUserController(userSrv)
 
-	bookSrv := services.NewBookService(rp.Book, rp.User, rp.Category)
-	bookCtl := controllers.NewBookController(bookSrv)
-
 	//!Auth
 	g.POST("/register", userCtl.UserRegister)
 	g.POST("/login", userCtl.UserLogin)
@@ -23,7 +20,4 @@ func User(g *gin.RouterGroup) {
 	//!Profile
 	g.GET("/profile", middlewares.UserAuthn(), userCtl.UserProfile)
 
-	//!Book
-	g.POST("/book", middlewares.UserAuthn(), bookCtl.CreateBook)
-	g.PUT("/book/:id", middlewares.UserAuthn(), bookCtl.UpdateBook)
 }

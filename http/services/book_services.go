@@ -18,7 +18,7 @@ import (
 type BookService interface {
 	CreateBook(ctx *gin.Context, user constants.AuthnPayload, src requests.BookRequest) (err error)
 	UpdateBook(ctx *gin.Context, user constants.AuthnPayload, src requests.BookRequest, id int) (err error)
-	GetOneBook(ctx *gin.Context, id int, published_status []domain.BookPublishedStatus) (responses.BookResponse, error)
+	GetOneBook(ctx *gin.Context, id int, user constants.AuthnPayload) (*responses.BookResponse, error)
 }
 
 type bookService struct {
@@ -112,12 +112,22 @@ func (srv *bookService) UpdateBook(ctx *gin.Context, user constants.AuthnPayload
 	return nil
 }
 
-func (srv *bookService) GetOneBook(ctx *gin.Context, id int, published_status []domain.BookPublishedStatus) (responses.BookResponse, error) {
-	targetBook, err := srv.bookRepo.GetOneBook(ctx, id, published_status)
+func (srv *bookService) GetOneBook(ctx *gin.Context, id int, user constants.AuthnPayload) (*responses.BookResponse, error) {
+	var targetBook domain.Book
+	var err error
+	if user.ID == 0 {
+		targetBook, err = srv.bookRepo.GetOneBook(ctx, id)
+
+	} else {
+		targetBook, err = srv.bookRepo.GetUserBook(ctx, id, int(user.ID))
+		if err != nil {
+			targetBook, err = srv.bookRepo.GetOneBook(ctx, id)
+		}
+	}
 	if err != nil {
 		errs.ErrorHandler(ctx, 404, "Book Not Found")
-		return responses.BookResponse{}, err
+		return nil, err
 	}
 	responseBook := responses.AssignedGetOneBook(targetBook)
-	return responseBook, nil
+	return &responseBook, nil
 }

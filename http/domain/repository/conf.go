@@ -10,6 +10,7 @@ type repositoryPool struct {
 	User     UserRepository
 	Book     BookRepository
 	Category CategoryRepository
+	Chapter  ChapterRepository
 }
 
 func InitRepositoryInstance() *repositoryPool {
@@ -18,6 +19,7 @@ func InitRepositoryInstance() *repositoryPool {
 		User:     NewUserRepository(),
 		Book:     NewBookRepository(),
 		Category: NewCategoryRepository(),
+		Chapter:  NewChapterRepository(),
 	}
 }
 func NewContext(parent context.Context) (context.Context, context.CancelFunc) {

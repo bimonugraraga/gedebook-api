@@ -12,13 +12,6 @@ type BookRequest struct {
 	BookCover      *string `json:"book_cover" form:"book_cover"`
 }
 
-type ChapterRequest struct {
-	BookID       int64  `json:"book_id" form:"book_id" binding:"required"`
-	ChapterTitle string `json:"chapter_title" form:"chapter_title" binding:"required"`
-	ChapterText  string `json:"chapter_text" form:"chapter_text" binding:"required"`
-	ChapterCover string `json:"chapter_cover" form:"chapter_cover" binding:"required"`
-}
-
 type UpdateBookStatusRequest struct {
 	Status string `json:"status" form:"status" binding:"required"`
 }
