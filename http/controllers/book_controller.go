@@ -16,6 +16,7 @@ import (
 type BookController interface {
 	CreateBook(ctx *gin.Context)
 	UpdateBook(ctx *gin.Context)
+	GetOneBook(ctx *gin.Context)
 }
 type bookController struct {
 	bookSrv services.BookService
@@ -31,6 +32,7 @@ func (ctl *bookController) CreateBook(ctx *gin.Context) {
 	value, exists := ctx.Get("user")
 	if !exists {
 		errs.ErrorHandler(ctx, 401, "Login Is Needed")
+		return
 	}
 	user, ok := value.(constants.AuthnPayload)
 	if !ok {
@@ -62,12 +64,13 @@ func (ctl *bookController) UpdateBook(ctx *gin.Context) {
 	value, exists := ctx.Get("user")
 	if !exists {
 		errs.ErrorHandler(ctx, 401, "Login Is Needed")
+		return
 	}
 	user, ok := value.(constants.AuthnPayload)
 	if !ok {
 		errs.ErrorHandler(ctx, 401, "Login Is Needed")
 	}
-	id, err := strconv.Atoi(ctx.Param("id"))
+	id, err := strconv.Atoi(ctx.Param("book_id"))
 	if err != nil {
 		errs.ErrorHandler(ctx, 400, "Failed To Get Params")
 	}
@@ -81,6 +84,33 @@ func (ctl *bookController) UpdateBook(ctx *gin.Context) {
 		ctx.JSON(http.StatusCreated, responses.R{
 			Code:    http.StatusCreated,
 			Message: "Success Update Book",
+		})
+	}
+}
+
+func (ctl *bookController) GetOneBook(ctx *gin.Context) {
+	var targetBook interface{}
+	id, err := strconv.Atoi(ctx.Param("book_id"))
+	if err != nil {
+		errs.ErrorHandler(ctx, 400, "Failed To Get Params")
+	}
+	value, exists := ctx.Get("user")
+	if !exists {
+		targetBook, err = ctl.bookSrv.GetOneBook(ctx, id, constants.AuthnPayload{})
+	} else {
+		user, ok := value.(constants.AuthnPayload)
+		if !ok {
+			errs.ErrorHandler(ctx, 401, "Login Is Needed")
+			return
+		}
+		targetBook, err = ctl.bookSrv.GetOneBook(ctx, id, user)
+	}
+
+	if err == nil {
+		ctx.JSON(http.StatusOK, responses.R{
+			Code:    http.StatusOK,
+			Message: "Success Fetch Book",
+			Data:    targetBook,
 		})
 	}
 }

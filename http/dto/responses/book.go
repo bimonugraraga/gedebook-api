@@ -16,9 +16,10 @@ type AuthorResponse struct {
 	ProfilePicture *string `json:"profile_picture"`
 }
 type PreviewChapter struct {
-	ID        int64     `json:"id"`
-	Title     string    `json:"title"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID              int64     `json:"id"`
+	ChapterTitle    string    `json:"chapter_title"`
+	PublishedStatus string    `json:"published_status"`
+	UpdatedAt       time.Time `json:"updated_at"`
 }
 type BookResponse struct {
 	ID             int64   `json:"id"`
@@ -29,6 +30,7 @@ type BookResponse struct {
 	Category       CategoryResponse
 	AuthorName     string `json:"author"`
 	AuthorProfile  AuthorResponse
+	ChapterCount   int `json:"chapter_count"`
 	Chapters       []PreviewChapter
 }
 
@@ -47,14 +49,16 @@ func AssignedGetOneBook(src domain.Book) (res BookResponse) {
 
 	for i := 0; i < len(src.Chapter); i++ {
 		chapter := PreviewChapter{
-			ID:        src.Chapter[i].ID,
-			Title:     src.Chapter[i].ChapterTitle,
-			UpdatedAt: src.Chapter[i].UpdatedAt,
+			ID:              src.Chapter[i].ID,
+			ChapterTitle:    src.Chapter[i].ChapterTitle,
+			UpdatedAt:       src.Chapter[i].UpdatedAt,
+			PublishedStatus: *src.Chapter[i].PublishedStatus,
 		}
 		res.Chapters = append(res.Chapters, chapter)
 	}
 	if len(res.Chapters) == 0 {
 		res.Chapters = make([]PreviewChapter, 0)
 	}
+	res.ChapterCount = len(res.Chapters)
 	return
 }

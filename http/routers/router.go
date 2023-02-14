@@ -21,6 +21,7 @@ func RoutesHandler(r *gin.Engine) {
 	{
 		Admin(v1.Group("/admin"))
 		User(v1.Group("/user"))
-		Guest(v1.Group("/guest"))
+		Book(v1.Group("/books"))
+		Chapter(v1.Group("/chapters"))
 	}
 }

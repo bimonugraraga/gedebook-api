@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"gedebook.com/api/domain"
+	"gedebook.com/api/constants"
 	"gedebook.com/api/dto/responses"
 	"gedebook.com/api/errs"
 	"gedebook.com/api/services"
@@ -12,35 +12,38 @@ import (
 )
 
 type GuestController interface {
-	GetOneBook(ctx *gin.Context)
+	GetOneChapter(ctx *gin.Context)
 }
 
 type guestController struct {
-	userSrv services.UserService
-	bookSrv services.BookService
+	userSrv    services.UserService
+	bookSrv    services.BookService
+	chapterSrv services.ChapterService
 }
 
-func NewGuestController(userSrv services.UserService, bookSrv services.BookService) GuestController {
+func NewGuestController(userSrv services.UserService, bookSrv services.BookService, chapterSrv services.ChapterService) GuestController {
 	return &guestController{
-		userSrv: userSrv,
-		bookSrv: bookSrv,
+		userSrv:    userSrv,
+		bookSrv:    bookSrv,
+		chapterSrv: chapterSrv,
 	}
 }
 
-func (ctl *guestController) GetOneBook(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Param("id"))
+func (ctl *guestController) GetOneChapter(ctx *gin.Context) {
+	chapter_id, err := strconv.Atoi(ctx.Param("chapter_id"))
 	if err != nil {
 		errs.ErrorHandler(ctx, 400, "Failed To Get Params")
 	}
-	var published_status []domain.BookPublishedStatus
-	published_status = append(published_status, domain.BookPublishedStatusPublished)
-
-	targetBook, err := ctl.bookSrv.GetOneBook(ctx, id, published_status)
+	book_id, err := strconv.Atoi(ctx.Param("book_id"))
+	if err != nil {
+		errs.ErrorHandler(ctx, 400, "Failed To Get Params")
+	}
+	responseChapter, err := ctl.chapterSrv.GetOneChapter(ctx, constants.AuthnPayload{}, chapter_id, book_id)
 	if err == nil {
 		ctx.JSON(http.StatusOK, responses.R{
 			Code:    http.StatusOK,
-			Message: "Success Fetch Book",
-			Data:    targetBook,
+			Message: "Success Fetch Chapter",
+			Data:    responseChapter,
 		})
 	}
 }

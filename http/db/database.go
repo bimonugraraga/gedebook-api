@@ -24,7 +24,7 @@ func InitDB(c *env.DatabaseConfig) *bun.DB {
 			c.User, c.Password, c.Host, c.Port, c.Name, c.SSLMode)
 		sqlDb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 		dbInstance = bun.NewDB(sqlDb, pgdialect.New())
-		// InitLogger(dbInstance, c.Debug, c.DebugLevel)
+		InitLogger(dbInstance, c.Debug, c.DebugLevel)
 	})
 
 	return dbInstance
