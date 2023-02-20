@@ -101,7 +101,9 @@ func (srv *bookService) UpdateBook(ctx *gin.Context, user constants.AuthnPayload
 		if len(src.Title) != 0 {
 			updateBook.Title = src.Title
 		}
-
+		if src.Synopsis != nil {
+			updateBook.Synopsis = src.Synopsis
+		}
 		err = srv.bookRepo.UpdateOneBook(ctx, &updateBook, id)
 		if err != nil {
 			errs.ErrorHandler(ctx, 400, "Failed To Update Book")

@@ -10,6 +10,7 @@ type BookRequest struct {
 	Type           string  `json:"type" form:"type" binding:"required"`
 	MainCategoryID int64   `json:"main_category_id" form:"main_category_id" binding:"required"`
 	BookCover      *string `json:"book_cover" form:"book_cover"`
+	Synopsis       *string `json:"synopsis" form:"synopsis"`
 }
 
 type UpdateBookStatusRequest struct {

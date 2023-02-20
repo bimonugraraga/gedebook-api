@@ -68,6 +68,7 @@ type Book struct {
 	Status          string    `bun:"status" json:"status"`
 	Chapter         []Chapter `bun:"rel:has-many,join:id=book_id" json:"chapters"`
 	PublishedStatus *string   `bun:"published_status" json:"published_status"`
+	Synopsis        *string   `bun:"synopsis" json:"synopsis"`
 	UpdatedAt       time.Time `bun:"updated_at,nullzero" json:"updated_at"`
 	CreatedAt       time.Time `bun:"created_at,nullzero" json:"created_at"`
 }

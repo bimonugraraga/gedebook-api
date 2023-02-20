@@ -50,7 +50,6 @@ func (r *userRepository) GetOneUserByID(ctx context.Context, id int) (res domain
 	if err := r.db.NewSelect().
 		Model(&res).
 		Where("id = ?", id).
-		ExcludeColumn("password").
 		Scan(ctx); err != nil {
 		return res, err
 	}
