@@ -14,6 +14,7 @@ func Book(g *gin.RouterGroup) {
 
 	bookCtl := controllers.NewBookController(bookSrv)
 
+	g.GET("", middlewares.UserAuthn(), bookCtl.GetAllBook)
 	g.GET("/:book_id", middlewares.UserAuthn(), bookCtl.GetOneBook)
 	g.POST("", middlewares.UserAuthn(), bookCtl.CreateBook)
 	g.PUT("/:book_id", middlewares.UserAuthn(), bookCtl.UpdateBook)
