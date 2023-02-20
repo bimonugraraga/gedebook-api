@@ -19,5 +19,6 @@ func User(g *gin.RouterGroup) {
 
 	//!Profile
 	g.GET("/profile", middlewares.UserAuthn(), userCtl.UserProfile)
+	g.PUT("/profile", middlewares.UserAuthn(), userCtl.UpdateProfile) //!Cannot Change Email And Password
 
 }

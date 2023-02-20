@@ -12,6 +12,7 @@ type UserRepository interface {
 	Register(ctx context.Context, src *domain.User) (err error)
 	GetOneUser(ctx context.Context, email string) (res domain.User, err error)
 	GetOneUserByID(ctx context.Context, id int) (res domain.User, err error)
+	UpdateUser(ctx context.Context, src *domain.User, id int) (err error)
 }
 
 type userRepository struct {
@@ -54,4 +55,19 @@ func (r *userRepository) GetOneUserByID(ctx context.Context, id int) (res domain
 		return res, err
 	}
 	return
+}
+
+func (r *userRepository) UpdateUser(ctx context.Context, src *domain.User, id int) (err error) {
+	_, err = r.db.NewUpdate().
+		Model(src).
+		Where("id = ?", id).
+		Returning("*").
+		ExcludeColumn("id").
+		Exec(ctx)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
