@@ -17,6 +17,7 @@ type BookController interface {
 	CreateBook(ctx *gin.Context)
 	UpdateBook(ctx *gin.Context)
 	GetOneBook(ctx *gin.Context)
+	GetAllBook(ctx *gin.Context)
 }
 type bookController struct {
 	bookSrv services.BookService
@@ -111,6 +112,35 @@ func (ctl *bookController) GetOneBook(ctx *gin.Context) {
 			Code:    http.StatusOK,
 			Message: "Success Fetch Book",
 			Data:    targetBook,
+		})
+	}
+}
+
+func (ctl *bookController) GetAllBook(ctx *gin.Context) {
+	var query requests.BookList
+	var allBook interface{}
+	var err error
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		errs.ErrorHandler(ctx, 400, "Invalid Query")
+		return
+	}
+	value, exists := ctx.Get("user")
+	if !exists {
+		allBook, err = ctl.bookSrv.GetAllBook(ctx, &query, constants.AuthnPayload{})
+	} else {
+		//! To Get My Book user.ID and query.UserID must be the same
+		user, ok := value.(constants.AuthnPayload)
+		if !ok {
+			errs.ErrorHandler(ctx, 401, "Login Is Needed")
+			return
+		}
+		allBook, err = ctl.bookSrv.GetAllBook(ctx, &query, user)
+	}
+	if err == nil {
+		ctx.JSON(http.StatusOK, responses.R{
+			Code:    http.StatusOK,
+			Message: "Success Fetch Books",
+			Data:    allBook,
 		})
 	}
 }

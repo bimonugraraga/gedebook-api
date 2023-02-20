@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"gedebook.com/api/constants"
 	"gedebook.com/api/db"
@@ -19,6 +20,7 @@ type BookService interface {
 	CreateBook(ctx *gin.Context, user constants.AuthnPayload, src requests.BookRequest) (err error)
 	UpdateBook(ctx *gin.Context, user constants.AuthnPayload, src requests.BookRequest, id int) (err error)
 	GetOneBook(ctx *gin.Context, id int, user constants.AuthnPayload) (*responses.BookResponse, error)
+	GetAllBook(ctx *gin.Context, query *requests.BookList, user constants.AuthnPayload) (res responses.PagingResponse, err error)
 }
 
 type bookService struct {
@@ -130,4 +132,33 @@ func (srv *bookService) GetOneBook(ctx *gin.Context, id int, user constants.Auth
 	}
 	responseBook := responses.AssignedGetOneBook(targetBook)
 	return &responseBook, nil
+}
+
+func (srv *bookService) GetAllBook(ctx *gin.Context, query *requests.BookList, user constants.AuthnPayload) (res responses.PagingResponse, err error) {
+	fmt.Println(query)
+
+	if query.UserID == 0 {
+		//!Guest
+		query.UserID = 0
+		query.ChapterStatus = "Published"
+		query.StatusPublished = "Published"
+	} else if query.UserID != 0 && query.UserID != user.ID {
+		//!Login But Did Not Checking My Book
+		query.UserID = 0
+		query.ChapterStatus = "Published"
+		query.StatusPublished = "Published"
+	} else if query.UserID != 0 && query.UserID == user.ID {
+		//!Login But Checking My Book
+		query.UserID = user.ID
+	}
+
+	data, total, err := srv.bookRepo.GetAllBook(ctx, query)
+	res = responses.NewPagingResponse(query.Limit, query.Page, total, len(data))
+	res.Records, err = responses.ListPaginatedBook(data)
+	if err != nil {
+		errs.ErrorHandler(ctx, 400, "Something Went Wrong")
+		return res, err
+	}
+
+	return
 }
