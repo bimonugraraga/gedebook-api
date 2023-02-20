@@ -21,6 +21,7 @@ type UserService interface {
 	Register(ctx *gin.Context, src *domain.User) error
 	Login(ctx *gin.Context, src *requests.UserLoginRequest) (*responses.UserLoginResponse, error)
 	UserProfile(ctx *gin.Context, params constants.AuthnPayload) (*responses.UserProfileResponse, error)
+	UpdateProfile(ctx *gin.Context, user constants.AuthnPayload, src requests.UpdateUserRequest) (*responses.UserLoginResponse, error)
 }
 
 type userService struct {
@@ -101,5 +102,58 @@ func (srv *userService) UserProfile(ctx *gin.Context, params constants.AuthnPayl
 
 	res := responses.AssignedUserProfile(targetUser)
 
+	return &res, nil
+}
+
+func (srv *userService) UpdateProfile(ctx *gin.Context, user constants.AuthnPayload, src requests.UpdateUserRequest) (*responses.UserLoginResponse, error) {
+	c, cancel := repository.NewContext(ctx)
+	defer cancel()
+	var res responses.UserLoginResponse
+	if err := db.GetConn().RunInTx(c, &sql.TxOptions{}, func(context context.Context, tx bun.Tx) (err error) {
+		targetUser, err := srv.userRepo.GetOneUserByID(ctx, int(user.ID))
+		if err != nil {
+			errs.ErrorHandler(ctx, 404, "User Not Found")
+			return err
+		}
+
+		updatedUser := targetUser
+		if src.Name != nil {
+			updatedUser.Name = *src.Name
+		}
+		if src.Profile != nil {
+			updatedUser.Profile = src.Profile
+		}
+		if src.ProfilePicture != nil {
+			updatedUser.ProfilePicture = src.ProfilePicture
+		}
+
+		err = srv.userRepo.UpdateUser(ctx, &updatedUser, int(user.ID))
+		if err != nil {
+			errs.ErrorHandler(ctx, 400, "Failed To Update")
+			return err
+		}
+
+		payload := constants.AuthnPayload{
+			Email: updatedUser.Email,
+			ID:    updatedUser.ID,
+			Name:  updatedUser.Name,
+			Role:  string(constants.User),
+		}
+		jwt, err := utils.SignToken(payload)
+		if err != nil {
+			errs.ErrorHandler(ctx, 400, "Failed To Create New JWT")
+			return err
+		}
+		res.Email = updatedUser.Email
+		res.ID = updatedUser.ID
+		res.Name = updatedUser.Name
+		res.AccessToken = jwt
+
+		return
+
+	}); err != nil {
+
+		return &res, err
+	}
 	return &res, nil
 }

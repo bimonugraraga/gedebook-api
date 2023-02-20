@@ -16,6 +16,7 @@ type UserController interface {
 	UserRegister(ctx *gin.Context)
 	UserLogin(ctx *gin.Context)
 	UserProfile(ctx *gin.Context)
+	UpdateProfile(ctx *gin.Context)
 }
 
 type userController struct {
@@ -94,4 +95,38 @@ func (ctl *userController) UserProfile(ctx *gin.Context) {
 			Data:    targetUser,
 		})
 	}
+}
+
+func (ctl *userController) UpdateProfile(ctx *gin.Context) {
+	value, exists := ctx.Get("user")
+	if !exists {
+		errs.ErrorHandler(ctx, 401, "Login Is Needed")
+		return
+	}
+	user, ok := value.(constants.AuthnPayload)
+	if !ok {
+		errs.ErrorHandler(ctx, 401, "Login Is Needed")
+		return
+	}
+
+	var src requests.UpdateUserRequest
+	if err := ctl.ParseUpdateProfileEntity(ctx, &src); err != nil {
+		errs.ErrorHandler(ctx, 400, "Invalid Input")
+		return
+	}
+	updated, err := ctl.userSrv.UpdateProfile(ctx, user, src)
+	if err == nil {
+		ctx.JSON(http.StatusOK, responses.R{
+			Code:    http.StatusOK,
+			Message: "Success Update Data",
+			Data:    updated,
+		})
+	}
+}
+
+func (ctl *userController) ParseUpdateProfileEntity(ctx *gin.Context, src *requests.UpdateUserRequest) error {
+	if err := ctx.ShouldBindBodyWith(src, binding.JSON); err != nil {
+		return err
+	}
+	return nil
 }
